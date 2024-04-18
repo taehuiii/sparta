@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스파르타플릭스 </title>
+
+    <!-- 부트스트랩에서 가져오기~~ -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- JQuery 가져오기~ -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- css -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Noto+Sans+KR&display=swap');
+
+        * {
+            font-family: "Noto Sans KR", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .main {
+
+            color: white;
+
+            /* 이미지는 세줄 */
+            background-image: url('https://occ-0-1123-1217.1.nflxso.net/dnm/api/v6/6AYY37jfdO6hpXcMjf9Yu5cnmO0/AAAABeIfo7VL_VDyKnljV66IkR-4XLb6xpZqhpLSo3JUtbivnEW4s60PD27muH1mdaANM_8rGpgbm6L2oDgA_iELHZLZ2IQjG5lvp5d2.jpg?r=e6e.jpg');
+            background-position: center;
+            background-size: center;
+        }
+
+        body {
+            background-color: black;
+        }
+
+        .mycards {
+
+            width: 1200px;
+            margin: 20px auto 20px auto;
+
+
+        }
+
+        .mypostingbox {
+            width: 500px;
+
+
+            margin: 20px auto 20px auto;
+
+            border: 1px solid white;
+            padding: 20px;
+            border-radius: 5px;
+
+        }
+
+        .form-floating>input {
+            background-color: transparent;
+            color: white;
+        }
+
+        .form-floating>label {
+            color: white;
+        }
+
+        .input-group>label {
+            background-color: transparent;
+            color: white;
+        }
+
+        .input-group>select {
+            background-color: transparent;
+            color: white;
+        }
+
+        .mypostingbox>button {
+            width: 100%
+        }
+    </style>
+
+    <!-- javascript -->
+    <script type="module">
+
+        // Firebase SDK 라이브러리 가져오기
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+
+        // Firebase 구성 정보 설정
+        const firebaseConfig = {
+            //본인 설정 내용 채우기 (파이어베이스 -프로젝투설정-sdk설정및구성 - 구성)
+
+            apiKey: "AIzaSyAUmg2tRw5A4-R47fdqG9SIuhmxLu9ESZc",
+            authDomain: "sparta-65640.firebaseapp.com",
+            projectId: "sparta-65640",
+            storageBucket: "sparta-65640.appspot.com",
+            messagingSenderId: "327920510712",
+            appId: "1:327920510712:web:05196dc1e9e813a3be7d0d",
+            measurementId: "G-8WZE1C0P04"
+
+        };
+
+        //데이터 추가 스켈레톤
+        $("#postingbtn").click(async function () {
+
+            let image = $('#image').val();
+            let title = $('#title').val();
+            let star = $('#star').val();
+            let comment = $('#comment').val();
+
+            //딕셔너리화
+            let doc = {
+                'image': image,
+                'title': title,
+                'star': star,
+                'comment': comment
+
+            };
+
+            await addDoc(collection(db, "movies"), doc); //파이어스토어에 저장 (addDoc), "movies" : 콜렉션이름 ( 파이어스토어에 albums )
+            alert('저장완료!');
+
+            window.location.reload(); //새로고침
+
+
+        })
+
+        $("#savebtn").click(async function () {
+            //toggle : 없으면 pop, 있으면 disappear
+            $('#postingbox').toggle();
+        })
+
+
+
+
+        // Firebase 인스턴스 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 새로고침하면 바로 띄울 수 있게 : document ready 
+        // $(document).ready(function () {  })
+        //걍 밖으로 꺼냄~ 파이어베이스 쓰니까
+
+        let url = "http://spartacodingclub.shop/sparta_api/weather/seoul";
+        fetch(url).then(res => res.json()).then(data => {
+            let temp = data['temp'];
+
+            if (temp > 20) {
+                $('#temperature').text('더워요');
+            } else {
+                $('#temperature').text('추워요');
+            }
+        })
+
+        //데이터 읽어와서 카드붙이기 (getDocs)
+        let docs = await getDocs(collection(db, "movies"));
+        docs.forEach((doc) => {
+            let row = doc.data();
+
+            //값을 가져온다
+            let image = row['image'];
+            let title = row['title'];
+            let comment = row['comment'];
+            let star = row['star'];
+
+        
+
+            //카드 한장 고대로 가져와서, 각각의 값 넣는다
+            let temp_html = ` <div class="col">
+                    <div class="card h-100">
+                        <img src="${image}"
+                            class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">${title}</h5>
+                            <p class="card-text">${star}</p>
+                            <p class="card-text">${comment}</p>
+                        </div>
+                    </div>
+                </div>`;
+
+            //새 카드를 붙인다
+            $('#card').append(temp_html)
+        
+
+        })
+     // **********************************************
+
+
+        // 리스트 : 순서가 중요 
+        let a = ['사과', '배', '수박'];
+        console.log(a[1]) //배 
+
+        //딕셔너리 : 한 사람에 대한 여러 정보
+        let person = { 'name': 'bob', 'age': 30, 'height': 180 }
+        console.log(person['name'])
+
+        let name = person['name']
+        let age = person['age']
+        console.log(name, age)
+
+        // 반복문 --> 보통 리스트 꾸러미와 쓰임!
+        let ages = [15, 30, 28, 7, 40, 13];
+        ages.forEach(a => {
+            if (a < 20) {
+                console.log('청소년입니다.')
+            } else {
+                console.log('성인입니다.')
+            }
+        });
+
+        //함수~
+        // // 영화기록하기 버튼
+        // function openclose() {
+        //     $('#postingbox').toggle();
+        // }
+
+        // //기록하기 버튼
+        // function makeCard() {
+        //     //값을 가져온다
+        //     let image = $('#image').val();
+        //     let title = $('#title').val();
+        //     let comment = $('#comment').val();
+        //     let star = $('#star').val();
+
+        //     console.log(image);
+        //     console.log(title);
+        //     console.log(comment);
+        //     console.log(star);
+
+        //     //카드 한장 고대로 가져와서, 각각의 값 넣는다
+        //     let temp_html = ` <div class="col">
+        //         <div class="card h-100">
+        //             <img src="${image}"
+        //                 class="card-img-top" alt="...">
+        //             <div class="card-body">
+        //                 <h5 class="card-title">${title}</h5>
+        //                 <p class="card-text">${star}</p>
+        //                 <p class="card-text">${comment}</p>
+        //             </div>
+        //         </div>
+        //     </div>`;
+
+        //     //새 카드를 붙인다
+        //     $('#card').append(temp_html)
+
+
+
+        // }
+
+
+        
+
+
+    </script>
+
+</head>
+
+<body>
+    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+            <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+        </a>
+
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="#" class="nav-link px-2 text-danger">spartaflix</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">홈</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">시리즈</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">영화</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">내가 찜한 콘텐츠</a></li>
+            <li><a href="#" class="nav-link px-2 text-white">현재 기온 : <span id=temperature></span></a></li>
+        </ul>
+
+        <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+            <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..."
+                aria-label="Search">
+        </form>
+
+        <div class="text-end">
+            <button type="button" class="btn btn-outline-light me-2">Login</button>
+            <button type="button" class="btn btn-danger">Sign-up</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="container-fluid py-5">
+            <!-- id='title' for Jquery  -->
+            <h1 class="display-5 fw-bold">킹덤</h1>
+            <p class="col-md-8 fs-4">병든 왕을 둘러싸고 흉흉한 소문이 떠돈다. 어둠에 뒤덮인 조선, 기이한 역병에 신음하는 산하. 정체 모를 악에 맞서 백성을 구원할 희망은 오직
+                세자뿐이다.</p>
+
+            <!-- 버튼에 javascript함수동작 넣기!! onclick="함수이름()" -->
+            <button id="savebtn" type="button" class="btn btn-outline-light">영화 기록하기</button>
+            <button type="button" class="btn btn-outline-light">상세정보</button>
+        </div>
+    </div>
+
+    <div class="mypostingbox" id="postingbox">
+        <!-- floating label -->
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="image" placeholder="name@example.com">
+            <label for="floatingInput">영화 이미지 주소</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="title" placeholder="name@example.com">
+            <label for="floatingInput">영화 제목</label>
+        </div>
+
+        <!-- input group -->
+        <div class="input-group mb-3">
+            <label class="input-group-text" for="inputGroupSelect01">별점</label>
+            <select class="form-select" id="star">
+                <option selected>별점 선택</option>
+                <option value="⭐">⭐</option>
+                <option value="⭐⭐">⭐⭐</option>
+                <option value="⭐⭐⭐">⭐⭐⭐</option>
+                <option value="⭐⭐⭐⭐">⭐⭐⭐⭐</option>
+                <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐</option>
+            </select>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="comment" placeholder="name@example.com">
+            <label for="floatingInput">추천 이유</label>
+        </div>
+
+        <button id="postingbtn" type="button" class="btn btn-danger">기록하기</button>
+
+
+
+    </div>
+
+    <div class="mycards">
+        <!-- id="card"에 새로운 카드 붙일거임 -->
+        <div id="card" class="row row-cols-1 row-cols-md-4 g-4">
+            <div class="col">
+                <div class="card h-100">
+                    <img src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+                        class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">영화 제목</h5>
+                        <p class="card-text">⭐⭐⭐</p>
+                        <p class="card-text">영화 코멘트</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card h-100">
+                    <img src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+                        class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">영화 제목</h5>
+                        <p class="card-text">⭐⭐⭐</p>
+                        <p class="card-text">영화 코멘트</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <img src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+                        class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">영화 제목</h5>
+                        <p class="card-text">⭐⭐⭐</p>
+                        <p class="card-text">영화 코멘트</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <img src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+                        class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">영화 제목</h5>
+                        <p class="card-text">⭐⭐⭐</p>
+                        <p class="card-text">영화 코멘트</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+
+
+</body>
+
+</html>
+
+<!-- JQuery란 ? 
+HTML들을 조작하는 javascript를 미리 더 쉽게 작성해둔 라이브러리 ( Import 필요 )-->

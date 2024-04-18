@@ -159,6 +159,8 @@
             }
         })
 
+         $('#card').empty();
+
         //데이터 읽어와서 카드붙이기 (getDocs)
         let docs = await getDocs(collection(db, "movies"));
         docs.forEach((doc) => {
